@@ -1,4 +1,4 @@
-package com.byteflow.learnffmpeg;
+package com.von.ffmpeg.demo;
 
 import android.os.Build;
 import android.os.Bundle;
@@ -7,28 +7,21 @@ import android.util.Log;
 import android.view.SurfaceHolder;
 import android.widget.SeekBar;
 
-import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.byteflow.learnffmpeg.media.FFMediaPlayer;
-import com.byteflow.learnffmpeg.media.MySurfaceView;
+import com.von.ffmpeg.demo.media.FFmpegPlayer;
+import com.von.ffmpeg.demo.media.MySurfaceView;
 
-import static com.byteflow.learnffmpeg.media.FFMediaPlayer.MEDIA_PARAM_VIDEO_DURATION;
-import static com.byteflow.learnffmpeg.media.FFMediaPlayer.MEDIA_PARAM_VIDEO_HEIGHT;
-import static com.byteflow.learnffmpeg.media.FFMediaPlayer.MEDIA_PARAM_VIDEO_WIDTH;
-import static com.byteflow.learnffmpeg.media.FFMediaPlayer.MSG_DECODER_DONE;
-import static com.byteflow.learnffmpeg.media.FFMediaPlayer.MSG_DECODER_INIT_ERROR;
-import static com.byteflow.learnffmpeg.media.FFMediaPlayer.MSG_DECODER_READY;
-import static com.byteflow.learnffmpeg.media.FFMediaPlayer.MSG_DECODING_TIME;
-import static com.byteflow.learnffmpeg.media.FFMediaPlayer.MSG_REQUEST_RENDER;
 
-public class MediaPlayerActivity extends AppCompatActivity implements SurfaceHolder.Callback, FFMediaPlayer.EventCallback{
+public class MediaPlayerActivity extends AppCompatActivity
+        implements SurfaceHolder.Callback, FFmpegPlayer.EventCallback {
     private static final String TAG = "MediaPlayerActivity";
     private MySurfaceView mSurfaceView = null;
-    private FFMediaPlayer mMediaPlayer = null;
+    private FFmpegPlayer mMediaPlayer = null;
     private SeekBar mSeekBar = null;
     private boolean mIsTouch = false;
-    private String mPath = Environment.getExternalStorageDirectory().getAbsolutePath() + "/mvtest.mp4";
+    private final String mPath = Environment.getExternalStorageDirectory().getAbsolutePath() + "/mvtest.mp4";
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -51,7 +44,7 @@ public class MediaPlayerActivity extends AppCompatActivity implements SurfaceHol
             @Override
             public void onStopTrackingTouch(SeekBar seekBar) {
                 Log.d(TAG, "onStopTrackingTouch() called with: progress = [" + seekBar.getProgress() + "]");
-                if(mMediaPlayer != null) {
+                if (mMediaPlayer != null) {
                     mMediaPlayer.seekToPosition(mSeekBar.getProgress());
                     mIsTouch = false;
                 }
@@ -63,14 +56,14 @@ public class MediaPlayerActivity extends AppCompatActivity implements SurfaceHol
     @Override
     protected void onResume() {
         super.onResume();
-        if(mMediaPlayer != null)
+        if (mMediaPlayer != null)
             mMediaPlayer.play();
     }
 
     @Override
     protected void onPause() {
         super.onPause();
-        if(mMediaPlayer != null)
+        if (mMediaPlayer != null)
             mMediaPlayer.pause();
     }
 
@@ -82,7 +75,7 @@ public class MediaPlayerActivity extends AppCompatActivity implements SurfaceHol
     @Override
     public void surfaceCreated(SurfaceHolder surfaceHolder) {
         Log.d(TAG, "surfaceCreated() called with: surfaceHolder = [" + surfaceHolder + "]");
-        mMediaPlayer = new FFMediaPlayer();
+        mMediaPlayer = new FFmpegPlayer();
         mMediaPlayer.addEventCallback(this);
         mMediaPlayer.init(mPath, surfaceHolder.getSurface());
     }
@@ -106,17 +99,18 @@ public class MediaPlayerActivity extends AppCompatActivity implements SurfaceHol
             @Override
             public void run() {
                 switch (msgType) {
-                    case MSG_DECODER_INIT_ERROR:
+
+                    case FFmpegPlayer.MessageCode.MSG_DECODER_INIT_ERROR:
                         break;
-                    case MSG_DECODER_READY:
+                    case FFmpegPlayer.MessageCode.MSG_DECODER_READY:
                         onDecoderReady();
                         break;
-                    case MSG_DECODER_DONE:
+                    case FFmpegPlayer.MessageCode.MSG_DECODER_DONE:
                         break;
-                    case MSG_REQUEST_RENDER:
+                    case FFmpegPlayer.MessageCode.MSG_REQUEST_RENDER:
                         break;
-                    case MSG_DECODING_TIME:
-                        if(!mIsTouch)
+                    case FFmpegPlayer.MessageCode.MSG_DECODING_TIME:
+                        if (!mIsTouch)
                             mSeekBar.setProgress((int) msgValue);
                         break;
                     default:
@@ -128,12 +122,12 @@ public class MediaPlayerActivity extends AppCompatActivity implements SurfaceHol
     }
 
     private void onDecoderReady() {
-        int videoWidth = (int) mMediaPlayer.getMediaParams(MEDIA_PARAM_VIDEO_WIDTH);
-        int videoHeight = (int) mMediaPlayer.getMediaParams(MEDIA_PARAM_VIDEO_HEIGHT);
-        if(videoHeight * videoWidth != 0)
+        int videoWidth = (int) mMediaPlayer.getMediaParams(FFmpegPlayer.MediaParam.MEDIA_PARAM_VIDEO_WIDTH);
+        int videoHeight = (int) mMediaPlayer.getMediaParams(FFmpegPlayer.MediaParam.MEDIA_PARAM_VIDEO_HEIGHT);
+        if (videoHeight * videoWidth != 0)
             mSurfaceView.setAspectRatio(videoWidth, videoHeight);
 
-        int duration = (int) mMediaPlayer.getMediaParams(MEDIA_PARAM_VIDEO_DURATION);
+        int duration = (int) mMediaPlayer.getMediaParams(FFmpegPlayer.MediaParam.MEDIA_PARAM_VIDEO_DURATION);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             mSeekBar.setMin(0);
         }

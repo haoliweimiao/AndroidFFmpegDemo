@@ -1311,7 +1311,7 @@ enum AVPacketSideDataType {
 
     /**
      * A list of zero terminated key/value strings. There is no end marker for
-     * the list, so it is required to rely on the side data size to stop.
+     * the list, so it is required to rely on the side data size to ffmpegPlayerStop.
      */
     AV_PKT_DATA_STRINGS_METADATA,
 
@@ -1347,7 +1347,7 @@ enum AVPacketSideDataType {
 
     /**
      * A list of zero terminated key/value strings. There is no end marker for
-     * the list, so it is required to rely on the side data size to stop. This
+     * the list, so it is required to rely on the side data size to ffmpegPlayerStop. This
      * side data includes updated metadata which appeared in the stream.
      */
     AV_PKT_DATA_METADATA_UPDATE,

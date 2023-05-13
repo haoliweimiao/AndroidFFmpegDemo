@@ -792,7 +792,7 @@ const char *avio_enum_protocols(void **opaque, int output);
  * protocol (e.g. MMS).
  *
  * @param h     IO context from which to call the read_pause function pointer
- * @param pause 1 for pause, 0 for resume
+ * @param pause 1 for ffmpegPlayerPause, 0 for resume
  */
 int     avio_pause(AVIOContext *h, int pause);
 

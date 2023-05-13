@@ -13,11 +13,10 @@ extern "C" {
 #include <libswscale/version.h>
 };
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-JNIEXPORT jstring JNICALL
-Java_com_von_ffmpeg_demo_FFmpegNative_getFFmpegVersion(JNIEnv *env, jclass clazz) {
+#include "FFMediaPlayer.h"
+
+static jstring getFFmpegPlayerVersion(JNIEnv *env, jclass instance
+) {
     char strBuffer[1024 * 4] = {0};
     strcat(strBuffer, "libavcodec : ");
     strcat(strBuffer, AV_STRINGIFY(LIBAVCODEC_VERSION));
@@ -38,6 +37,86 @@ Java_com_von_ffmpeg_demo_FFmpegNative_getFFmpegVersion(JNIEnv *env, jclass clazz
     return env->NewStringUTF(strBuffer);
 }
 
-#ifdef __cplusplus
+static jlong ffmpegPlayerInit(JNIEnv *env, jobject obj, jstring jurl, jobject surface) {
+    const char *url = env->GetStringUTFChars(jurl, nullptr);
+    auto *player = new FFMediaPlayer();
+    player->Init(env, obj, const_cast<char *>(url), surface);
+    env->ReleaseStringUTFChars(jurl, url);
+    return reinterpret_cast<jlong>(player);
 }
-#endif
+
+static void ffmpegPlayerPlay(JNIEnv *env, jobject obj, jlong player_handle) {
+    if (player_handle != 0) {
+        auto *ffMediaPlayer = reinterpret_cast<FFMediaPlayer *>(player_handle);
+        ffMediaPlayer->Play();
+    }
+}
+
+static void
+ffmpegPlayerSeekToPosition(JNIEnv *env, jobject obj, jlong player_handle, jfloat position) {
+    if (player_handle != 0) {
+        auto *ffMediaPlayer = reinterpret_cast<FFMediaPlayer *>(player_handle);
+        ffMediaPlayer->SeekToPosition(position);
+    }
+}
+
+
+static jlong
+getFFmpegPlayerMediaParams(JNIEnv *env, jobject thiz, jlong player_handle, jint param_type) {
+    long value = 0;
+    if (player_handle != 0) {
+        auto *ffMediaPlayer = reinterpret_cast<FFMediaPlayer *>(player_handle);
+        value = ffMediaPlayer->GetMediaParams(param_type);
+    }
+    return value;
+}
+
+static void ffmpegPlayerPause(JNIEnv *env, jobject obj, jlong player_handle) {
+    if (player_handle != 0) {
+        auto *ffMediaPlayer = reinterpret_cast<FFMediaPlayer *>(player_handle);
+        ffMediaPlayer->Pause();
+    }
+}
+
+static void ffmpegPlayerStop(JNIEnv *env, jobject obj, jlong player_handle) {
+    if (player_handle != 0) {
+        auto *ffMediaPlayer = reinterpret_cast<FFMediaPlayer *>(player_handle);
+        ffMediaPlayer->Stop();
+    }
+}
+
+static void ffmpegPlayerUnInit(JNIEnv *env, jobject obj, jlong player_handle) {
+    if (player_handle != 0) {
+        auto *ffMediaPlayer = reinterpret_cast<FFMediaPlayer *>(player_handle);
+        ffMediaPlayer->UnInit();
+    }
+}
+
+static JNINativeMethod method_table[] = {
+        {"nativeGetFFmpegVersion", "()Ljava/lang/String;",                    (void *) getFFmpegPlayerVersion},
+        {"nativeInit",             "(Ljava/lang/String;Ljava/lang/Object;)J", (void *) ffmpegPlayerInit},
+        {"nativePlay",             "(J)V",                                    (void *) ffmpegPlayerPlay},
+        {"nativeSeekToPosition",   "(JF)V",                                   (void *) ffmpegPlayerSeekToPosition},
+        {"nativeGetMediaParams",   "(JI)J",                                   (void *) getFFmpegPlayerMediaParams},
+        {"nativePause",            "(J)V",                                    (void *) ffmpegPlayerPause},
+        {"nativeStop",             "(J)V",                                    (void *) ffmpegPlayerStop},
+        {"nativeUnInit",           "(J)V",                                    (void *) ffmpegPlayerUnInit},
+};
+
+
+extern "C" jint JNI_OnLoad(JavaVM *vm, void *reserved) {
+    JNIEnv *env;
+    if (vm->GetEnv(reinterpret_cast<void **>(&env), JNI_VERSION_1_6) != JNI_OK) {
+        return JNI_ERR;
+    } else {
+        jclass clazz = env->FindClass("com/von/ffmpeg/demo/media/FFmpegPlayer");
+        if (clazz) {
+            jint ret = env->RegisterNatives(clazz, method_table,
+                                            sizeof(method_table) / sizeof(method_table[0]));
+            env->DeleteLocalRef(clazz);
+            return ret == 0 ? JNI_VERSION_1_6 : JNI_ERR;
+        } else {
+            return JNI_ERR;
+        }
+    }
+}

@@ -1,11 +1,12 @@
 //
-// Created by 字节流动 on 2020/6/17.
+// Created by Von on 2020/6/17.
 //
 
-#ifndef LEARNFFMPEG_VIDEODECODER_H
-#define LEARNFFMPEG_VIDEODECODER_H
+#ifndef FFMPEGDEMO_VIDEODECODER_H
+#define FFMPEGDEMO_VIDEODECODER_H
 
 extern "C" {
+#define __STDC_CONSTANT_MACROS
 #include <libavutil/imgutils.h>
 #include <libswscale/swscale.h>
 };
@@ -13,34 +14,41 @@ extern "C" {
 #include <render/video/VideoRender.h>
 #include "DecoderBase.h"
 
+/**
+ * Init -> ;
+ * Start -> StartDecodingThread -> InitFFDecoder -> OnDecoderReady -> DecodingLoop(循环 DecodeOnePacket 解析)
+ * -> UnInitDecoder -> OnDecoderDone
+ * @param url
+ */
 class VideoDecoder : public DecoderBase {
 
 public:
-    VideoDecoder(char *url){
-        Init(url, AVMEDIA_TYPE_VIDEO);
+    VideoDecoder(char *url) {
+        int ret = DecoderBase::Init(url, AVMEDIA_TYPE_VIDEO);
+        LOGCATV("VideoDecoder constructor ret: %d", ret);
     }
 
-    virtual ~VideoDecoder(){
-        UnInit();
+    virtual ~VideoDecoder() {
+        DecoderBase::UnInit();
     }
 
-    int GetVideoWidth()
-    {
+    int GetVideoWidth() {
         return m_VideoWidth;
     }
-    int GetVideoHeight()
-    {
+
+    int GetVideoHeight() {
         return m_VideoHeight;
     }
 
-    void SetVideoRender(VideoRender *videoRender)
-    {
+    void SetVideoRender(VideoRender *videoRender) {
         m_VideoRender = videoRender;
     }
 
 private:
     virtual void OnDecoderReady();
+
     virtual void OnDecoderDone();
+
     virtual void OnFrameAvailable(AVFrame *frame);
 
     const AVPixelFormat DST_PIXEL_FORMAT = AV_PIX_FMT_RGBA;
@@ -61,4 +69,4 @@ private:
 };
 
 
-#endif //LEARNFFMPEG_VIDEODECODER_H
+#endif //FFMPEGDEMO_VIDEODECODER_H

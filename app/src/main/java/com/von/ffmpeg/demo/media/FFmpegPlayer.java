@@ -1,6 +1,8 @@
-package com.von.ffmpeg.demo;
+package com.von.ffmpeg.demo.media;
 
 import android.view.Surface;
+
+import androidx.annotation.IntDef;
 
 public class FFmpegPlayer {
 
@@ -8,15 +10,33 @@ public class FFmpegPlayer {
         System.loadLibrary("learn-ffmpeg");
     }
 
-    public static final int MSG_DECODER_INIT_ERROR = 0;
-    public static final int MSG_DECODER_READY = 1;
-    public static final int MSG_DECODER_DONE = 2;
-    public static final int MSG_REQUEST_RENDER = 3;
-    public static final int MSG_DECODING_TIME = 4;
+    @IntDef({
+            MessageCode.MSG_DECODER_INIT_ERROR,
+            MessageCode.MSG_DECODER_READY,
+            MessageCode.MSG_DECODER_DONE,
+            MessageCode.MSG_REQUEST_RENDER,
+            MessageCode.MSG_DECODING_TIME,
+    })
+    public @interface MessageCode {
+        int MSG_DECODER_INIT_ERROR = 0;
+        int MSG_DECODER_READY = 1;
+        int MSG_DECODER_DONE = 2;
+        int MSG_REQUEST_RENDER = 3;
+        int MSG_DECODING_TIME = 4;
+    }
 
-    public static final int MEDIA_PARAM_VIDEO_WIDTH = 0x0001;
-    public static final int MEDIA_PARAM_VIDEO_HEIGHT = 0x0002;
-    public static final int MEDIA_PARAM_VIDEO_DURATION = 0x0003;
+
+    @IntDef({
+            MediaParam.MEDIA_PARAM_VIDEO_WIDTH,
+            MediaParam.MEDIA_PARAM_VIDEO_HEIGHT,
+            MediaParam.MEDIA_PARAM_VIDEO_DURATION,
+    })
+    public @interface MediaParam {
+        int MEDIA_PARAM_VIDEO_WIDTH = 0x0001;
+        int MEDIA_PARAM_VIDEO_HEIGHT = 0x0002;
+        int MEDIA_PARAM_VIDEO_DURATION = 0x0003;
+    }
+
 
     private long mNativePlayerHandle = 0;
 
@@ -58,10 +78,10 @@ public class FFmpegPlayer {
         return nativeGetMediaParams(mNativePlayerHandle, paramType);
     }
 
-    private void playerEventCallback(int msgType, float msgValue) {
+
+    private void nativePlayerEventCallback(int msgType, float msgValue) {
         if (mEventCallback != null)
             mEventCallback.onPlayerEvent(msgType, msgValue);
-
     }
 
     private static native String nativeGetFFmpegVersion();

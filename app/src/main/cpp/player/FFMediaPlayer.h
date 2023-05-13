@@ -1,5 +1,5 @@
 //
-// Created by byteflow on 2020/6/17.
+// Created by Von on 2020/6/17.
 //
 
 #ifndef LEARNFFMPEG_FFMEDIAPLAYER_H
@@ -10,7 +10,7 @@
 #include <decoder/AudioDecoder.h>
 #include <render/audio/AudioRender.h>
 
-#define JAVA_PLAYER_EVENT_CALLBACK_API_NAME "playerEventCallback"
+#define JAVA_PLAYER_EVENT_CALLBACK_API_NAME "nativePlayerEventCallback"
 
 #define MEDIA_PARAM_VIDEO_WIDTH         0x0001
 #define MEDIA_PARAM_VIDEO_HEIGHT        0x0002
@@ -18,21 +18,29 @@
 
 class FFMediaPlayer {
 public:
-    FFMediaPlayer(){};
-    ~FFMediaPlayer(){};
+    FFMediaPlayer() {};
+
+    ~FFMediaPlayer() {};
 
     void Init(JNIEnv *jniEnv, jobject obj, char *url, jobject surface);
+
     void UnInit();
 
     void Play();
+
     void Pause();
+
     void Stop();
+
     void SeekToPosition(float position);
+
     long GetMediaParams(int paramType);
 
 private:
     JNIEnv *GetJNIEnv(bool *isAttach);
+
     jobject GetJavaObj();
+
     JavaVM *GetJavaVM();
 
     static void PostMessage(void *context, int msgType, float msgCode);

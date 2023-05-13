@@ -1,4 +1,4 @@
-package com.byteflow.learnffmpeg.media;
+package com.von.ffmpeg.demo.media;
 
 import android.content.Context;
 import android.opengl.GLSurfaceView;

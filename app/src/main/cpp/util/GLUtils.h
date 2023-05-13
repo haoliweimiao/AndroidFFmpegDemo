@@ -1,5 +1,5 @@
-#ifndef _BYTE_FLOW_GL_UTILS_H_
-#define _BYTE_FLOW_GL_UTILS_H_
+#ifndef _GL_UTILS_H_
+#define _GL_UTILS_H_
 
 #include <GLES3/gl3.h>
 #include <string>
@@ -59,7 +59,8 @@ public:
         glUniform4fv(glGetUniformLocation(programId, name.c_str()), 1, &value[0]);
     }
 
-    static void setVec4(GLuint programId, const std::string &name, float x, float y, float z, float w) {
+    static void
+    setVec4(GLuint programId, const std::string &name, float x, float y, float z, float w) {
         glUniform4f(glGetUniformLocation(programId, name.c_str()), x, y, z, w);
     }
 
@@ -81,4 +82,4 @@ public:
 
 };
 
-#endif // _BYTE_FLOW_GL_UTILS_H_
+#endif // _GL_UTILS_H_

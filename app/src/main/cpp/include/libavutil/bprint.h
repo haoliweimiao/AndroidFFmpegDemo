@@ -59,7 +59,7 @@ typedef struct name { \
  * enough memory.
  *
  * Append operations do not need to be tested for failure: if a memory
- * allocation fails, data stop being appended to the buffer, but the length
+ * allocation fails, data ffmpegPlayerStop being appended to the buffer, but the length
  * is still updated. This situation can be tested with
  * av_bprint_is_complete().
  *

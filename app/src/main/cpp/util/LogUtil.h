@@ -1,14 +1,14 @@
 //
-// Created by ByteFlow on 2019/1/14.
+// Created by Von on 2019/1/14.
 //
 
-#ifndef BYTEFLOW_LOGUTIL_H
-#define BYTEFLOW_LOGUTIL_H
+#ifndef LOGUTIL_H
+#define LOGUTIL_H
 
 #include<android/log.h>
 #include <sys/time.h>
 
-#define  LOG_TAG "ByteFlow"
+#define  LOG_TAG "Von"
 
 #define  LOGCATE(...)  __android_log_print(ANDROID_LOG_ERROR,LOG_TAG,__VA_ARGS__)
 #define  LOGCATV(...)  __android_log_print(ANDROID_LOG_VERBOSE,LOG_TAG,__VA_ARGS__)
@@ -31,16 +31,15 @@
     long long t1 = GetSysCurrentTime(); \
     LOGCATE("%s func cost time %ldms", FUN, (long)(t1-t0));}
 
-static long long GetSysCurrentTime()
-{
-	struct timeval time;
-	gettimeofday(&time, NULL);
-	long long curTime = ((long long)(time.tv_sec))*1000+time.tv_usec/1000;
-	return curTime;
+static long long GetSysCurrentTime() {
+    struct timeval time;
+    gettimeofday(&time, NULL);
+    long long curTime = ((long long) (time.tv_sec)) * 1000 + time.tv_usec / 1000;
+    return curTime;
 }
 
 #define GO_CHECK_GL_ERROR(...)   LOGCATE("CHECK_GL_ERROR %s glGetError = %d, line = %d, ",  __FUNCTION__, glGetError(), __LINE__)
 
 #define DEBUG_LOGCATE(...) LOGCATE("DEBUG_LOGCATE %s line = %d",  __FUNCTION__, __LINE__)
 
-#endif //BYTEFLOW_LOGUTIL_H
+#endif //LOGUTIL_H
