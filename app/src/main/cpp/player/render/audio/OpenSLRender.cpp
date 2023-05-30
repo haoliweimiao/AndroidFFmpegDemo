@@ -81,6 +81,7 @@ void OpenSLRender::UnInit() {
     }
 
     if (m_EngineObj) {
+        // 释放引擎对象的资源
         (*m_EngineObj)->Destroy(m_EngineObj);
         m_EngineObj = nullptr;
         m_EngineEngine = nullptr;
@@ -103,18 +104,24 @@ void OpenSLRender::UnInit() {
 int OpenSLRender::CreateEngine() {
     SLresult result = SL_RESULT_SUCCESS;
     do {
+        // Audio 引擎对象和接口，即 Engine Object 和 SLEngineItf Interface。
+        // Engine Object 的主要功能是管理 Audio Engine 的生命周期，提供引擎对象的管理接口。
+
+        // 创建引擎对象
         result = slCreateEngine(&m_EngineObj, 0, nullptr, 0, nullptr, nullptr);
         if (result != SL_RESULT_SUCCESS) {
             LOGCATE("OpenSLRender::CreateEngine slCreateEngine fail. result=%d", result);
             break;
         }
 
+        // 创建引擎对象
         result = (*m_EngineObj)->Realize(m_EngineObj, SL_BOOLEAN_FALSE);
         if (result != SL_RESULT_SUCCESS) {
             LOGCATE("OpenSLRender::CreateEngine Realize fail. result=%d", result);
             break;
         }
 
+        // 获取引擎对象接口
         result = (*m_EngineObj)->GetInterface(m_EngineObj, SL_IID_ENGINE, &m_EngineEngine);
         if (result != SL_RESULT_SUCCESS) {
             LOGCATE("OpenSLRender::CreateEngine GetInterface fail. result=%d", result);
@@ -149,8 +156,11 @@ int OpenSLRender::CreateOutputMixer() {
 }
 
 int OpenSLRender::CreateAudioPlayer() {
+    // 数据源简单缓冲队列定位器
     SLDataLocator_AndroidSimpleBufferQueue android_queue = {SL_DATALOCATOR_ANDROIDSIMPLEBUFFERQUEUE,
                                                             2};
+
+    // 创建 audio player 对象
     SLDataFormat_PCM pcm = {
             SL_DATAFORMAT_PCM,//format type
             (SLuint32) 2,//channel count
@@ -160,10 +170,17 @@ int OpenSLRender::CreateAudioPlayer() {
             SL_SPEAKER_FRONT_LEFT | SL_SPEAKER_FRONT_RIGHT,// channel mask
             SL_BYTEORDER_LITTLEENDIAN // endianness
     };
+
+    // OpenSL ES 中的 SLDataSource 和 SLDataSink 结构体，主要用于构建 audio player 和 recorder 对象，
+    // 其中 SLDataSource 表示音频数据来源的信息，SLDataSink 表示音频数据输出信息。
     SLDataSource slDataSource = {&android_queue, &pcm};
 
+    // 针对数据接收器的输出混合定位器(混音器)
     SLDataLocator_OutputMix outputMix = {SL_DATALOCATOR_OUTPUTMIX, m_OutputMixObj};
-    SLDataSink slDataSink = {&outputMix, nullptr};
+    SLDataSink slDataSink = {
+            // 定位器
+            &outputMix,
+            nullptr};
 
     const SLInterfaceID ids[3] = {SL_IID_BUFFERQUEUE, SL_IID_EFFECTSEND, SL_IID_VOLUME};
     const SLboolean req[3] = {SL_BOOLEAN_TRUE, SL_BOOLEAN_TRUE, SL_BOOLEAN_TRUE};
@@ -171,7 +188,7 @@ int OpenSLRender::CreateAudioPlayer() {
     SLresult result;
 
     do {
-
+        // 创建 audio player 对象
         result = (*m_EngineEngine)->CreateAudioPlayer(m_EngineEngine, &m_AudioPlayerObj,
                                                       &slDataSource, &slDataSink, 3, ids, req);
         if (result != SL_RESULT_SUCCESS) {
@@ -225,7 +242,10 @@ void OpenSLRender::StartRender() {
         lock.unlock();
     }
 
+    // 设置播放状态
     (*m_AudioPlayerPlay)->SetPlayState(m_AudioPlayerPlay, SL_PLAYSTATE_PLAYING);
+
+    // 激活回调接口
     AudioPlayerCallback(m_BufferQueue, this);
 }
 
@@ -239,6 +259,7 @@ void OpenSLRender::HandleAudioFrameQueue() {
     }
 
     std::unique_lock<std::mutex> lock(m_Mutex);
+    // 播放存放在音频帧队列中的数据
     AudioFrame *audioFrame = m_AudioFrameQueue.front();
     lock.unlock();
     if (nullptr != audioFrame && m_AudioPlayerPlay) {
@@ -258,6 +279,6 @@ void OpenSLRender::CreateSLWaitingThread(OpenSLRender *openSlRender) {
 }
 
 void OpenSLRender::AudioPlayerCallback(SLAndroidSimpleBufferQueueItf bufferQueue, void *context) {
-    OpenSLRender *openSlRender = static_cast<OpenSLRender *>(context);
+    auto *openSlRender = static_cast<OpenSLRender *>(context);
     openSlRender->HandleAudioFrameQueue();
 }
